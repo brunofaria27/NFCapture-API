@@ -1,14 +1,32 @@
 import * as mongoDB from 'mongodb'
 import * as dotenv from 'dotenv'
+import * as fs from 'fs'
 
 export const collections: {
   equipments?: mongoDB.Collection
   usuarios?: mongoDB.Collection
 } = {}
 
+function checkEnvFile() {
+  const envFilePath = './.env'
+
+  try {
+    fs.accessSync(envFilePath, fs.constants.F_OK)
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
 export async function connectToDatabase() {
   dotenv.config()
+  const envFileExists = checkEnvFile()
 
+  if (!envFileExists) {
+    console.log('.env file does not exist. Error to connect to database')
+    return null
+  }
+  
   const client: mongoDB.MongoClient = new mongoDB.MongoClient(
     process.env.MONGO_URI
   )
@@ -35,5 +53,6 @@ export async function connectToDatabase() {
   } catch (error) {
     console.log(`Error to connect database.`)
     client.close()
+    return null
   }
 }
