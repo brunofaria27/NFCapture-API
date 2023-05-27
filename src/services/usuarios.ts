@@ -58,3 +58,27 @@ export async function getUser(req: Request, res: Response) {
     return res.status(500).json({ message: 'Erro ao buscar usuário.' })
   }
 }
+
+export async function deletarUsuario(req: Request, res: Response) {
+  try {
+    await connectToDatabase()
+    const usuarios = collections.usuarios
+
+    if (!usuarios) {
+      return res.status(500).send('A coleção usuarios não foi encontrada.')
+    }
+
+    const { email } = req.body
+    const filter = { email: email }
+
+    const result = await usuarios?.deleteOne(filter)
+    if (result.deletedCount === 0) {
+      res.status(500).send(`O usuário com o email ${email} não foi encontrado.`)
+      return
+    }
+
+    res.status(200).send(`Usuário com o email ${email} deletado com sucesso.`)
+  } catch (error) {
+    res.status(500).send('Erro ao deletar usuário do banco de dados.')
+  }
+}
