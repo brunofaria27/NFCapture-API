@@ -1,10 +1,17 @@
 import { Request, Response } from 'express'
+import * as mongoDB from 'mongodb'
 
-import { connectToDatabase, collections } from './server'
+import {
+  connectToDatabase,
+  collections,
+  closeDatabaseConnection,
+} from './server'
 
 export async function getEquipments(req: Request, res: Response) {
+  let client: mongoDB.MongoClient | null = null
+
   try {
-    await connectToDatabase()
+    client = await connectToDatabase()
     const equipments = collections.equipments
 
     if (!equipments) {
@@ -15,12 +22,18 @@ export async function getEquipments(req: Request, res: Response) {
     res.send(result)
   } catch (error) {
     res.status(500).send('Erro ao pegar equipamentos do banco de dados.')
+  } finally {
+    if (client) {
+      await closeDatabaseConnection(client)
+    }
   }
 }
 
 export async function criarEquipment(req: Request, res: Response) {
+  let client: mongoDB.MongoClient | null = null
+
   try {
-    await connectToDatabase()
+    client = await connectToDatabase()
     const equipments = collections.equipments
 
     if (!equipments) {
@@ -41,12 +54,18 @@ export async function criarEquipment(req: Request, res: Response) {
     res.send(result)
   } catch (error) {
     res.status(500).send('Erro ao criar equipamento no banco de dados.')
+  } finally {
+    if (client) {
+      await closeDatabaseConnection(client)
+    }
   }
 }
 
 export async function addUsos(req: Request, res: Response) {
+  let client: mongoDB.MongoClient | null = null
+
   try {
-    await connectToDatabase()
+    client = await connectToDatabase()
     let newQnt = 0
     const equipments = collections.equipments
 
@@ -72,12 +91,18 @@ export async function addUsos(req: Request, res: Response) {
     res.status(200).send('Adicionado uso com sucesso do banco de dados.')
   } catch (error) {
     res.status(500).send('Erro ao adicionar uso ao banco de dados.')
+  } finally {
+    if (client) {
+      await closeDatabaseConnection(client)
+    }
   }
 }
 
 export async function deletarEquipment(req: Request, res: Response) {
+  let client: mongoDB.MongoClient | null = null
+
   try {
-    await connectToDatabase()
+    client = await connectToDatabase()
     const equipments = collections.equipments
 
     if (!equipments) {
@@ -96,5 +121,9 @@ export async function deletarEquipment(req: Request, res: Response) {
     res.status(200).send(`Equipamento ${nome} deletado com sucesso.`)
   } catch (error) {
     res.status(500).send('Erro ao deletar equipamento do banco de dados.')
+  } finally {
+    if (client) {
+      await closeDatabaseConnection(client)
+    }
   }
 }

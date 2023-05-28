@@ -1,11 +1,14 @@
 import { ObjectId } from 'mongodb'
+import * as mongoDB from 'mongodb'
 import { Request, Response } from 'express'
 
-import { connectToDatabase, collections } from './server'
+import { connectToDatabase, collections, closeDatabaseConnection } from './server'
 
 export async function addUser(req: Request, res: Response) {
+  let client: mongoDB.MongoClient | null = null;
+
   try {
-    await connectToDatabase()
+    client = await connectToDatabase()
     const usuario = collections.usuarios
 
     if (!usuario) {
@@ -25,12 +28,18 @@ export async function addUser(req: Request, res: Response) {
     return res.status(200).send('Adicionado com sucesso do banco de dados.')
   } catch (error) {
     return res.status(500).send('Erro ao adicionar usuário ao banco de dados.')
+  } finally {
+    if (client) {
+      await closeDatabaseConnection(client);
+    }
   }
 }
 
 export async function getUsuarios(req: Request, res: Response) {
+  let client: mongoDB.MongoClient | null = null;
+
   try {
-    await connectToDatabase()
+    client = await connectToDatabase()
     const usuarios = collections.usuarios
 
     if (!usuarios) {
@@ -41,12 +50,18 @@ export async function getUsuarios(req: Request, res: Response) {
     res.send(result)
   } catch (error) {
     res.status(500).send('Erro ao buscar usuários do banco de dados.')
+  } finally {
+    if (client) {
+      await closeDatabaseConnection(client);
+    }
   }
 }
 
 export async function deletarUsuario(req: Request, res: Response) {
+  let client: mongoDB.MongoClient | null = null;
+
   try {
-    await connectToDatabase()
+    client = await connectToDatabase()
     const usuarios = collections.usuarios
 
     if (!usuarios) {
@@ -65,5 +80,9 @@ export async function deletarUsuario(req: Request, res: Response) {
     res.status(200).send(`Usuário com o email ${email} deletado com sucesso.`)
   } catch (error) {
     res.status(500).send('Erro ao deletar usuário do banco de dados.')
+  } finally {
+    if (client) {
+      await closeDatabaseConnection(client);
+    }
   }
 }
